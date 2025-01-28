@@ -139,6 +139,7 @@ void on_minitel_connected(void)
     {
       Serial.println("[OK]");
       Serial1.write(VDT_SERVICE_OK, sizeof(VDT_SERVICE_OK));
+      connected = true;
     }
     else
     {
@@ -149,6 +150,9 @@ void on_minitel_connected(void)
     }
   }
   Serial.println("Connected to minitel");
+
+  Serial1.flush();
+  buffer_len = 0;
 }
 
 void on_minitel_disconnected(void) 
@@ -169,6 +173,9 @@ void on_minitel_disconnected(void)
   Serial1.write(VDT_SERVICE_DISCONNECTED, sizeof(VDT_SERVICE_DISCONNECTED));
   Serial1.write(VDT_BEEP, sizeof(VDT_BEEP));
   Serial.println("Disconnected");
+
+  Serial1.flush();
+  buffer_len = 0;
 }
 
 void setup() 
@@ -233,6 +240,10 @@ void loop()
     Serial.print("FROM  MINITEL: ");
     Serial.println(data, HEX);
     update_sequence(data);
+    
+    buffer[buffer_len] = data;
+    buffer_len++;
+
     if (is_ts_connection_pressed())
     {
       connected = !connected;
@@ -245,8 +256,7 @@ void loop()
         on_minitel_disconnected();
       }
     }
-    buffer[buffer_len] = data;
-    buffer_len++;
+    
   }
 
   if (buffer_len)
